@@ -40,12 +40,10 @@ jobs:
 
   publish-testpypi:
     needs: build
-    if: >-
-      ${{
-        needs.build.result == 'success' &&
-        secrets.TEST_PYPI_API_TOKEN != ''
-      }}
+    if: ${{ needs.build.result == 'success' }}
     runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.publish.outputs.published }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,21 +52,24 @@ jobs:
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v2
-      - name: Publish to TestPyPI
+      - id: publish
         env:
+          TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
           UV_PUBLISH_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        run: uv publish --repository testpypi
+        run: |
+          if [ -z "$TEST_PYPI_API_TOKEN" ]; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "TEST_PYPI_API_TOKEN not set; skipping TestPyPI publish."
+            exit 0
+          fi
+          uv publish --repository testpypi
+          echo "published=true" >> "$GITHUB_OUTPUT"
 
   publish-pypi:
     needs:
       - build
       - publish-testpypi
-    if: >-
-      ${{
-        needs.build.result == 'success' &&
-        needs.publish-testpypi.result == 'success' &&
-        secrets.PYPI_API_TOKEN != ''
-      }}
+    if: ${{ needs.build.result == 'success' && needs.publish-testpypi.outputs.published == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -80,5 +81,11 @@ jobs:
       - uses: astral-sh/setup-uv@v2
       - name: Publish to PyPI
         env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
           UV_PUBLISH_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: uv publish
+        run: |
+          if [ -z "$PYPI_API_TOKEN" ]; then
+            echo "PYPI_API_TOKEN not set; aborting PyPI publish."
+            exit 1
+          fi
+          uv publish
