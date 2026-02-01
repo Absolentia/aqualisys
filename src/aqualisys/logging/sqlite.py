@@ -22,8 +22,7 @@ class SQLiteRunLogger(RunLogger):
 
     def _ensure_schema(self) -> None:
         with self._connect() as conn:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS runs
                 (
                     run_id       TEXT PRIMARY KEY,
@@ -33,10 +32,8 @@ class SQLiteRunLogger(RunLogger):
                     total_rules  INTEGER DEFAULT 0,
                     failed_rules INTEGER DEFAULT 0
                 )
-                """
-            )
-            conn.execute(
-                """
+                """)
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS rule_results
                 (
                     id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,8 +46,7 @@ class SQLiteRunLogger(RunLogger):
                     recorded_at TEXT NOT NULL,
                     FOREIGN KEY (run_id) REFERENCES runs (run_id)
                 )
-                """
-            )
+                """)
             conn.commit()
 
     def log_run_started(self, context: RuleContext) -> None:
@@ -68,7 +64,15 @@ class SQLiteRunLogger(RunLogger):
         with self._connect() as conn:
             conn.execute(
                 """
-                INSERT INTO rule_results(run_id, rule_name, status, severity, message, metrics, recorded_at)
+                INSERT INTO rule_results(
+                    run_id,
+                    rule_name,
+                    status,
+                    severity,
+                    message,
+                    metrics,
+                    recorded_at
+                )
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
@@ -83,7 +87,11 @@ class SQLiteRunLogger(RunLogger):
             )
             conn.commit()
 
-    def log_run_completed(self, context: RuleContext, results: Iterable[RuleResult]) -> None:
+    def log_run_completed(
+        self,
+        context: RuleContext,
+        results: Iterable[RuleResult],
+    ) -> None:
         results_list = list(results)
         failed = sum(1 for result in results_list if not result.passed)
         with self._connect() as conn:

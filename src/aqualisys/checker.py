@@ -4,7 +4,8 @@ from uuid import uuid4
 
 try:
     import polars as pl
-except ModuleNotFoundError:  # pragma: no cover - optional dependency in some environments
+except ModuleNotFoundError:
+    # pragma: no cover - optional dependency in some environments
     pl = None  # type: ignore
 
 from .checks.base import BaseRule, RuleContext, RuleResult, RuleSeverity
@@ -40,11 +41,11 @@ class DataQualityChecker:
     """Coordinates rule execution and logging."""
 
     def __init__(
-            self,
-            rules: Iterable[BaseRule] | None = None,
-            bundles: Iterable[RuleBundle] | None = None,
-            logger: RunLogger | None = None,
-            fail_fast: bool = False,
+        self,
+        rules: Iterable[BaseRule] | None = None,
+        bundles: Iterable[RuleBundle] | None = None,
+        logger: RunLogger | None = None,
+        fail_fast: bool = False,
     ) -> None:
         self._rules: list[BaseRule] = list(rules or [])
         for bundle in bundles or []:
@@ -60,10 +61,10 @@ class DataQualityChecker:
         self._rules.extend(rules)
 
     def run(
-            self,
-            dataframe: "pl.DataFrame",
-            dataset_name: str,
-            run_id: str | None = None,
+        self,
+        dataframe: "pl.DataFrame",
+        dataset_name: str,
+        run_id: str | None = None,
     ) -> ValidationReport:
         if pl is None:  # pragma: no cover - guard for environments without polars
             raise RuntimeError("polars is required to run validations")
@@ -80,10 +81,18 @@ class DataQualityChecker:
             results.append(result)
             if self._logger:
                 self._logger.log_rule_result(context, result)
-            if self._fail_fast and not result.passed and rule.severity is RuleSeverity.ERROR:
+            if (
+                self._fail_fast
+                and not result.passed
+                and rule.severity is RuleSeverity.ERROR
+            ):
                 break
 
         if self._logger:
             self._logger.log_run_completed(context, results)
 
-        return ValidationReport(run_id=run_id, dataset_name=dataset_name, results=results)
+        return ValidationReport(
+            run_id=run_id,
+            dataset_name=dataset_name,
+            results=results,
+        )

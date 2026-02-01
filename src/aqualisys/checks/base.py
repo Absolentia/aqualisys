@@ -6,7 +6,8 @@ from typing import Any, Protocol, runtime_checkable
 
 try:
     import polars as pl
-except ModuleNotFoundError:  # pragma: no cover - polars is an optional runtime dependency in tests
+except ModuleNotFoundError:
+    # pragma: no cover - polars is an optional runtime dependency in tests
     pl = None  # type: ignore
 
 

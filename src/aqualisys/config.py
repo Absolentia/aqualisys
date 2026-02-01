@@ -7,7 +7,8 @@ import yaml
 
 try:
     import polars as pl
-except ModuleNotFoundError:  # pragma: no cover - optional dependency
+except ModuleNotFoundError:
+    # pragma: no cover - optional dependency
     pl = None  # type: ignore
 
 from .checker import DataQualityChecker
@@ -27,11 +28,15 @@ def _build_unique(config: Mapping[str, Any]) -> BaseRule:
 
 
 def _build_accepted(config: Mapping[str, Any]) -> BaseRule:
-    return AcceptedValuesRule(column=config["column"], allowed_values=config["allowed_values"])
+    return AcceptedValuesRule(
+        column=config["column"],
+        allowed_values=config["allowed_values"],
+    )
 
 
 def _build_relationship(config: Mapping[str, Any]) -> BaseRule:
-    if pl is None:  # pragma: no cover - config is still valid without runtime Polars
+    if pl is None:
+        # pragma: no cover - config is still valid without runtime Polars
         raise RuntimeError("polars is required for relationship rules")
     ref_path = Path(config["reference"]["path"])
     ref_format = config["reference"].get("format", "parquet")
@@ -100,4 +105,8 @@ class ValidationSuiteConfig:
 
     def build_checker(self) -> DataQualityChecker:
         logger = SQLiteRunLogger(self.logger_path)
-        return DataQualityChecker(rules=self.build_rules(), logger=logger, fail_fast=self.fail_fast)
+        return DataQualityChecker(
+            rules=self.build_rules(),
+            logger=logger,
+            fail_fast=self.fail_fast,
+        )

@@ -1,13 +1,13 @@
 import pytest
 
-pl = pytest.importorskip("polars")
-
 from aqualisys.checks.rules import (
     AcceptedValuesRule,
     NotNullRule,
     RelationshipRule,
     UniqueRule,
 )
+
+pl = pytest.importorskip("polars")
 
 
 def test_not_null_rule_passes():
@@ -40,6 +40,10 @@ def test_accepted_values_rule():
 def test_relationship_rule_respects_reference():
     orders = pl.DataFrame({"customer_id": [1, 2, 3]})
     customers = pl.DataFrame({"id": [1, 2]})
-    result = RelationshipRule("customer_id", customers.rename({"id": "customer_id"}), "customer_id").evaluate(orders)
+    result = RelationshipRule(
+        "customer_id",
+        customers.rename({"id": "customer_id"}),
+        "customer_id",
+    ).evaluate(orders)
     assert not result.passed
     assert result.metrics["violation_count"] == 1

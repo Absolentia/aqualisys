@@ -12,7 +12,10 @@ def cli() -> None:
 
 
 @cli.command("validate")
-@click.argument("config_path", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.argument(
+    "config_path",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+)
 def validate_command(config_path: Path) -> None:
     """Run the configured validation suite and emit a JSON summary."""
 

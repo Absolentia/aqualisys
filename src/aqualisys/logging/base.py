@@ -18,13 +18,20 @@ class RunLogger(ABC):
     """Interface for persisting run metadata + rule outcomes."""
 
     @abstractmethod
-    def log_run_started(self, context: RuleContext) -> None:  # pragma: no cover - interface
-        ...
+    def log_run_started(self, context: RuleContext) -> None:
+        """Persist metadata that a run has started."""
+        ...  # pragma: no cover - interface
 
     @abstractmethod
-    def log_rule_result(self, context: RuleContext, result: RuleResult) -> None:  # pragma: no cover - interface
-        ...
+    def log_rule_result(self, context: RuleContext, result: RuleResult) -> None:
+        """Persist the outcome of a single rule execution."""
+        ...  # pragma: no cover - interface
 
     @abstractmethod
-    def log_run_completed(self, context: RuleContext, results: Iterable[RuleResult]) -> None:  # pragma: no cover
-        ...
+    def log_run_completed(
+        self,
+        context: RuleContext,
+        results: Iterable[RuleResult],
+    ) -> None:
+        """Persist that a run finished, including summary counts."""
+        ...  # pragma: no cover

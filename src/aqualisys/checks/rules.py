@@ -13,7 +13,9 @@ class ColumnRule(BaseRule):
     description: str | None = None
 
     def __post_init__(self) -> None:
-        self.description = self.description or f"{self.__class__.__name__} on {self.column}"
+        self.description = (
+            self.description or f"{self.__class__.__name__} on {self.column}"
+        )
 
     @property
     def name(self) -> str:
@@ -24,7 +26,11 @@ class NotNullRule(ColumnRule):
     def evaluate(self, df: pl.DataFrame) -> RuleResult:
         nulls = df.select(pl.col(self.column).is_null().sum().alias("nulls")).item()
         status = RuleStatus.PASSED if nulls == 0 else RuleStatus.FAILED
-        message = "column has no nulls" if status is RuleStatus.PASSED else f"{nulls} null values found"
+        message = (
+            "column has no nulls"
+            if status is RuleStatus.PASSED
+            else f"{nulls} null values found"
+        )
         return RuleResult(
             rule_name=self.name,
             status=status,
@@ -40,7 +46,11 @@ class UniqueRule(ColumnRule):
         unique_rows = df.select(pl.col(self.column).n_unique().alias("unique")).item()
         duplicates = total_rows - unique_rows
         status = RuleStatus.PASSED if duplicates == 0 else RuleStatus.FAILED
-        message = "column values are unique" if status is RuleStatus.PASSED else f"{duplicates} duplicate rows found"
+        message = (
+            "column values are unique"
+            if status is RuleStatus.PASSED
+            else f"{duplicates} duplicate rows found"
+        )
         return RuleResult(
             rule_name=self.name,
             status=status,
@@ -51,8 +61,12 @@ class UniqueRule(ColumnRule):
 
 
 class AcceptedValuesRule(ColumnRule):
-    def __init__(self, column: str, allowed_values: Iterable[str | int | float],
-                 severity: RuleSeverity = RuleSeverity.ERROR):
+    def __init__(
+        self,
+        column: str,
+        allowed_values: Iterable[str | int | float],
+        severity: RuleSeverity = RuleSeverity.ERROR,
+    ):
         super().__init__(column=column, severity=severity)
         self.allowed_values = tuple(dict.fromkeys(allowed_values))  # stable + deduped
 
@@ -63,23 +77,30 @@ class AcceptedValuesRule(ColumnRule):
             .item()
         )
         status = RuleStatus.PASSED if violations == 0 else RuleStatus.FAILED
-        message = "column values match allowed set" if status is RuleStatus.PASSED else f"{violations} disallowed values detected"
+        message = (
+            "column values match allowed set"
+            if status is RuleStatus.PASSED
+            else f"{violations} disallowed values detected"
+        )
         return RuleResult(
             rule_name=self.name,
             status=status,
             message=message,
             severity=self.severity,
-            metrics={"violation_count": violations, "allowed_values": self.allowed_values},
+            metrics={
+                "violation_count": violations,
+                "allowed_values": self.allowed_values,
+            },
         )
 
 
 class RelationshipRule(ColumnRule):
     def __init__(
-            self,
-            column: str,
-            reference_df: pl.DataFrame,
-            reference_column: str,
-            severity: RuleSeverity = RuleSeverity.ERROR,
+        self,
+        column: str,
+        reference_df: pl.DataFrame,
+        reference_column: str,
+        severity: RuleSeverity = RuleSeverity.ERROR,
     ) -> None:
         super().__init__(column=column, severity=severity)
         self._reference_df = reference_df.select(reference_column)
@@ -88,9 +109,7 @@ class RelationshipRule(ColumnRule):
     def evaluate(self, df: pl.DataFrame) -> RuleResult:
         reference_set = set(self._reference_df[self._reference_column].to_list())
         violations = (
-            df.filter(~pl.col(self.column).is_in(reference_set))
-            .select(pl.len())
-            .item()
+            df.filter(~pl.col(self.column).is_in(reference_set)).select(pl.len()).item()
         )
         status = RuleStatus.PASSED if violations == 0 else RuleStatus.FAILED
         message = (

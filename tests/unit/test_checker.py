@@ -2,11 +2,11 @@ from dataclasses import dataclass
 
 import pytest
 
-pl = pytest.importorskip("polars")
-
 from aqualisys.checker import DataQualityChecker
 from aqualisys.checks.base import BaseRule, RuleResult, RuleSeverity, RuleStatus
 from aqualisys.logging.sqlite import SQLiteRunLogger
+
+pl = pytest.importorskip("polars")
 
 
 @dataclass
