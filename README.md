@@ -35,4 +35,6 @@ assert report.passed
 - `configs/`: sample validation suite definitions.
 - `docs/`: roadmap and design notes.
 
+See `docs/PUBLISHING.md` for uv-based build and release steps once you are ready to publish a new version.
+
 See `docs/ROADMAP.md` for the multi-week implementation plan inspired by the Start Data Engineering guide.
