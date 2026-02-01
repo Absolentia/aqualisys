@@ -1,7 +1,8 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Mapping, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 try:
     import polars as pl
@@ -38,7 +39,7 @@ class RuleResult:
 class RuleContext:
     dataset_name: str
     run_id: str
-    executed_at: datetime = datetime.now(tz=timezone.utc)
+    executed_at: datetime = datetime.now(tz=UTC)
 
 
 @runtime_checkable

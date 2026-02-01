@@ -1,5 +1,5 @@
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Iterable, Sequence
 from uuid import uuid4
 
 try:

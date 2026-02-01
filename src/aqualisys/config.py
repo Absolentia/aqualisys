@@ -1,6 +1,7 @@
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Mapping
+from typing import Any, ClassVar
 
 import yaml
 

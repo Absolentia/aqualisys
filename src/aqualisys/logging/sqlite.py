@@ -1,8 +1,8 @@
 import json
 import sqlite3
-from datetime import datetime, timezone
+from collections.abc import Iterable
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable
 
 from ..checks.base import RuleContext, RuleResult
 from .base import RunLogger
@@ -78,7 +78,7 @@ class SQLiteRunLogger(RunLogger):
                     result.severity.value,
                     result.message,
                     json.dumps(result.metrics or {}, default=str),
-                    datetime.now(tz=timezone.utc).isoformat(),
+                    datetime.now(tz=UTC).isoformat(),
                 ),
             )
             conn.commit()
@@ -96,7 +96,7 @@ class SQLiteRunLogger(RunLogger):
                 WHERE run_id = ?
                 """,
                 (
-                    datetime.now(tz=timezone.utc).isoformat(),
+                    datetime.now(tz=UTC).isoformat(),
                     len(results_list),
                     failed,
                     context.run_id,
