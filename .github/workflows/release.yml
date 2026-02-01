@@ -60,10 +60,13 @@ jobs:
         run: uv publish --repository testpypi
 
   publish-pypi:
-    needs: build
+    needs:
+      - build
+      - publish-testpypi
     if: >-
       ${{
         needs.build.result == 'success' &&
+        needs.publish-testpypi.result == 'success' &&
         secrets.PYPI_API_TOKEN != ''
       }}
     runs-on: ubuntu-latest
