@@ -36,9 +36,9 @@ class NotNullRule(ColumnRule):
 
 class UniqueRule(ColumnRule):
     def evaluate(self, df: pl.DataFrame) -> RuleResult:
-        duplicates = (
-            df.select(pl.col(self.column).is_duplicated().sum().alias("dupes")).item()
-        )
+        total_rows = df.height
+        unique_rows = df.select(pl.col(self.column).n_unique().alias("unique")).item()
+        duplicates = total_rows - unique_rows
         status = RuleStatus.PASSED if duplicates == 0 else RuleStatus.FAILED
         message = "column values are unique" if status is RuleStatus.PASSED else f"{duplicates} duplicate rows found"
         return RuleResult(
