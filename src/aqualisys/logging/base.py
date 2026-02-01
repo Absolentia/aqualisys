@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Iterable
 
-from src.aqualisys.checks.base import RuleContext, RuleResult
+from ..checks.base import RuleContext, RuleResult
 
 
 @dataclass(slots=True)

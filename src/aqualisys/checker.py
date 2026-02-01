@@ -7,8 +7,8 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - optional dependency in some environments
     pl = None  # type: ignore
 
-from src.aqualisys.checks.base import BaseRule, RuleContext, RuleResult, RuleSeverity
-from src.aqualisys.logging.base import RunLogger
+from .checks.base import BaseRule, RuleContext, RuleResult, RuleSeverity
+from .logging.base import RunLogger
 
 
 @dataclass(slots=True)

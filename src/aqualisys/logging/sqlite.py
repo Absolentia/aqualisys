@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-from src.aqualisys.checks.base import RuleContext, RuleResult
-from src.aqualisys.logging.base import RunLogger
+from ..checks.base import RuleContext, RuleResult
+from .base import RunLogger
 
 
 class SQLiteRunLogger(RunLogger):

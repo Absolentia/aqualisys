@@ -4,9 +4,9 @@ import pytest
 
 pl = pytest.importorskip("polars")
 
-from src.aqualisys.checker import DataQualityChecker
-from src.aqualisys.checks.base import BaseRule, RuleResult, RuleSeverity, RuleStatus
-from src.aqualisys.logging.sqlite import SQLiteRunLogger
+from aqualisys.checker import DataQualityChecker
+from aqualisys.checks.base import BaseRule, RuleResult, RuleSeverity, RuleStatus
+from aqualisys.logging.sqlite import SQLiteRunLogger
 
 
 @dataclass

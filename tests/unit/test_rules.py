@@ -2,7 +2,7 @@ import pytest
 
 pl = pytest.importorskip("polars")
 
-from src.aqualisys.checks.rules import AcceptedValuesRule, NotNullRule, RelationshipRule, UniqueRule
+from aqualisys.checks.rules import AcceptedValuesRule, NotNullRule, RelationshipRule, UniqueRule
 
 
 def test_not_null_rule_passes():

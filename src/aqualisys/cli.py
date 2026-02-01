@@ -3,7 +3,7 @@ from pathlib import Path
 
 import click
 
-from src.aqualisys.config import ValidationSuiteConfig
+from .config import ValidationSuiteConfig
 
 
 @click.group()

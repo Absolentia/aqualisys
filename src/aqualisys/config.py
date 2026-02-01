@@ -9,10 +9,10 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - optional dependency
     pl = None  # type: ignore
 
-from src.aqualisys.checker import DataQualityChecker
-from src.aqualisys.checks.base import BaseRule
-from src.aqualisys.checks.rules import AcceptedValuesRule, NotNullRule, RelationshipRule, UniqueRule
-from src.aqualisys.logging.sqlite import SQLiteRunLogger
+from .checker import DataQualityChecker
+from .checks.base import BaseRule
+from .checks.rules import AcceptedValuesRule, NotNullRule, RelationshipRule, UniqueRule
+from .logging.sqlite import SQLiteRunLogger
 
 RuleFactory = Callable[[Mapping[str, Any]], BaseRule]
 

@@ -3,7 +3,7 @@ from typing import Iterable
 
 import polars as pl
 
-from src.aqualisys.checks.base import BaseRule, RuleResult, RuleSeverity, RuleStatus
+from .base import BaseRule, RuleResult, RuleSeverity, RuleStatus
 
 
 @dataclass(slots=True)
