@@ -68,7 +68,7 @@ jobs:
 
   publish-testpypi:
     needs: build
-    if: secrets.TEST_PYPI_API_TOKEN != ''
+    if: ${{ secrets.TEST_PYPI_API_TOKEN != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -83,7 +83,7 @@ jobs:
 
   publish-pypi:
     needs: build
-    if: secrets.PYPI_API_TOKEN != ''
+    if: ${{ secrets.PYPI_API_TOKEN != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
