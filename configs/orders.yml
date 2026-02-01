@@ -1,0 +1,15 @@
+dataset:
+  name: orders
+  path: data/orders.parquet
+  format: parquet
+fail_fast: true
+logger:
+  path: artifacts/orders_runs.db
+rules:
+  - type: not_null
+    column: order_id
+  - type: unique
+    column: order_id
+  - type: accepted_values
+    column: order_status
+    allowed_values: ["pending", "shipped", "delivered", "cancelled"]
