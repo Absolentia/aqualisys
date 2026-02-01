@@ -8,18 +8,29 @@ on:
 
 jobs:
   build:
-    if: >-
-      ${{
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.event == 'push' &&
-        startsWith(github.event.workflow_run.head_branch, 'v')
-      }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
+
+      - name: Ensure tag release
+        id: tag_check
+        run: |
+          TAG_NAME="$(git describe --tags --exact-match HEAD 2>/dev/null || true)"
+          if [ -z "$TAG_NAME" ]; then
+            echo "This commit is not tagged; skipping release build."
+            echo "release_tag=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ "$TAG_NAME" != v* ]]; then
+            echo "Tag $TAG_NAME does not match v* pattern; skipping."
+            echo "release_tag=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "release_tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,9 +41,11 @@ jobs:
         uses: astral-sh/setup-uv@v2
 
       - name: Build package
+        if: ${{ steps.tag_check.outputs.release_tag != '' }}
         run: uv build
 
       - name: Upload dist artifacts
+        if: ${{ steps.tag_check.outputs.release_tag != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: aqualisys-dist
@@ -40,7 +53,7 @@ jobs:
 
   publish-testpypi:
     needs: build
-    if: ${{ needs.build.result == 'success' }}
+    if: ${{ needs.build.result == 'success' && needs.build.outputs.release_tag != '' }}
     runs-on: ubuntu-latest
     outputs:
       published: ${{ steps.publish.outputs.published }}
@@ -69,7 +82,12 @@ jobs:
     needs:
       - build
       - publish-testpypi
-    if: ${{ needs.build.result == 'success' && needs.publish-testpypi.outputs.published == 'true' }}
+    if: >-
+      ${{
+        needs.build.result == 'success' &&
+        needs.build.outputs.release_tag != '' &&
+        needs.publish-testpypi.outputs.published == 'true'
+      }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
