@@ -60,9 +60,10 @@ jobs:
     outputs:
       published: ${{ steps.publish.outputs.published }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          name: aqualisys-dist
+          path: dist
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -79,7 +80,7 @@ jobs:
             echo "TEST_PYPI_API_TOKEN not set; skipping TestPyPI publish."
             exit 0
           fi
-          uv publish
+          uv publish --directory dist
           echo "published=true" >> "$GITHUB_OUTPUT"
 
   publish-pypi:
@@ -111,4 +112,4 @@ jobs:
             echo "PYPI_API_TOKEN not set; aborting PyPI publish."
             exit 1
           fi
-          uv publish
+          uv publish --directory dist
