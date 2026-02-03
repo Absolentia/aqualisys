@@ -71,13 +71,15 @@ jobs:
         env:
           TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
           UV_PUBLISH_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          UV_PUBLISH_URL: https://test.pypi.org/legacy/
+          UV_PUBLISH_USERNAME: __token__
         run: |
           if [ -z "$TEST_PYPI_API_TOKEN" ]; then
             echo "published=false" >> "$GITHUB_OUTPUT"
             echo "TEST_PYPI_API_TOKEN not set; skipping TestPyPI publish."
             exit 0
           fi
-          uv publish --repository testpypi
+          uv publish
           echo "published=true" >> "$GITHUB_OUTPUT"
 
   publish-pypi:
@@ -103,6 +105,7 @@ jobs:
         env:
           PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
           UV_PUBLISH_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          UV_PUBLISH_USERNAME: __token__
         run: |
           if [ -z "$PYPI_API_TOKEN" ]; then
             echo "PYPI_API_TOKEN not set; aborting PyPI publish."
