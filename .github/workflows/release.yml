@@ -92,7 +92,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aqualisys-dist
-          path: dist/
+          path: dist/*
 
   publish-testpypi:
     needs: build
@@ -106,6 +106,16 @@ jobs:
           name: aqualisys-dist
           path: dist
           merge-multiple: true
+      - name: Flatten dist contents
+        run: |
+          shopt -s nullglob
+          find dist -mindepth 2 -type f -exec mv {} dist/ \;
+          find dist -mindepth 1 -type d -empty -delete
+      - name: Flatten dist contents
+        run: |
+          shopt -s nullglob
+          find dist -mindepth 2 -type f -exec mv {} dist/ \;
+          find dist -mindepth 1 -type d -empty -delete
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
