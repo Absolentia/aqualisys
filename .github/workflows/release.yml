@@ -109,6 +109,8 @@ jobs:
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v2
+      - name: Build dist for publishing
+        run: uv build
       - id: publish
         env:
           TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
@@ -144,6 +146,8 @@ jobs:
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v2
+      - name: Build dist for publishing
+        run: uv build
       - name: Publish to PyPI
         env:
           PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
