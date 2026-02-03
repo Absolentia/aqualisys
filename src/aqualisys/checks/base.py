@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Protocol, runtime_checkable
 
 try:
@@ -11,12 +11,12 @@ except ModuleNotFoundError:
     pl = None  # type: ignore
 
 
-class RuleSeverity(str, Enum):
+class RuleSeverity(StrEnum):
     ERROR = "error"
     WARN = "warn"
 
 
-class RuleStatus(str, Enum):
+class RuleStatus(StrEnum):
     PASSED = "passed"
     FAILED = "failed"
 
