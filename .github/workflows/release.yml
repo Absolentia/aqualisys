@@ -10,6 +10,8 @@ jobs:
   build:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
     runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.tag_check.outputs.release_tag }}
     steps:
       - uses: actions/checkout@v4
         with:
