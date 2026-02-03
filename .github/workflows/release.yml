@@ -104,7 +104,15 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: aqualisys-dist
-          path: .
+          path: artifacts
+      - name: Prepare dist contents
+        run: |
+          rm -rf dist
+          mkdir -p dist
+          shopt -s nullglob dotglob
+          mv artifacts/aqualisys-dist/* dist/
+          rmdir artifacts/aqualisys-dist || true
+          rmdir artifacts || true
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -139,7 +147,15 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: aqualisys-dist
-          path: .
+          path: artifacts
+      - name: Prepare dist contents
+        run: |
+          rm -rf dist
+          mkdir -p dist
+          shopt -s nullglob dotglob
+          mv artifacts/aqualisys-dist/* dist/
+          rmdir artifacts/aqualisys-dist || true
+          rmdir artifacts || true
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
