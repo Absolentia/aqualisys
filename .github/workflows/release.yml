@@ -101,21 +101,10 @@ jobs:
     outputs:
       published: ${{ steps.publish.outputs.published }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
         with:
-          name: aqualisys-dist
-          path: dist
-          merge-multiple: true
-      - name: Flatten dist contents
-        run: |
-          shopt -s nullglob
-          find dist -mindepth 2 -type f -exec mv {} dist/ \;
-          find dist -mindepth 1 -type d -empty -delete
-      - name: Flatten dist contents
-        run: |
-          shopt -s nullglob
-          find dist -mindepth 2 -type f -exec mv {} dist/ \;
-          find dist -mindepth 1 -type d -empty -delete
+          ref: ${{ github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -132,7 +121,7 @@ jobs:
             echo "TEST_PYPI_API_TOKEN not set; skipping TestPyPI publish."
             exit 0
           fi
-          uv publish --directory dist
+          uv publish
           echo "published=true" >> "$GITHUB_OUTPUT"
 
   publish-pypi:
@@ -147,11 +136,10 @@ jobs:
       }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
         with:
-          name: aqualisys-dist
-          path: dist
-          merge-multiple: true
+          ref: ${{ github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -166,4 +154,4 @@ jobs:
             echo "PYPI_API_TOKEN not set; aborting PyPI publish."
             exit 1
           fi
-          uv publish --directory dist
+          uv publish
