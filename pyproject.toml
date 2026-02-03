@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "aqualisys"
 version = "0.1.0"
 description = "Polars-first data-quality and data-validation toolkit."
-authors = [{ name = "Aqualisys Maintainers", email = "maintainers@aqualisys.local" }]
+authors = [{ name = "Aqualisys Maintainers", email = "maintainers@aqualisys.dev" }]
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
