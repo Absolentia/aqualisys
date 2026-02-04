@@ -1,6 +1,7 @@
 import json
 import sqlite3
-from collections.abc import Iterable
+import time
+from collections.abc import Callable, Iterable
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -11,8 +12,16 @@ from .base import RunLogger
 class SQLiteRunLogger(RunLogger):
     """Persists run + rule records to a lightweight SQLite database."""
 
-    def __init__(self, db_path: str | Path = "aqualisys_runs.db") -> None:
+    def __init__(
+        self,
+        db_path: str | Path = "aqualisys_runs.db",
+        *,
+        retries: int = 2,
+        retry_delay: float = 0.1,
+    ) -> None:
         self.db_path = Path(db_path)
+        self._retries = retries
+        self._retry_delay = retry_delay
         self._ensure_schema()
 
     def _connect(self) -> sqlite3.Connection:
@@ -21,7 +30,7 @@ class SQLiteRunLogger(RunLogger):
         return conn
 
     def _ensure_schema(self) -> None:
-        with self._connect() as conn:
+        def action(conn: sqlite3.Connection) -> None:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS runs
                 (
@@ -47,10 +56,11 @@ class SQLiteRunLogger(RunLogger):
                     FOREIGN KEY (run_id) REFERENCES runs (run_id)
                 )
                 """)
-            conn.commit()
+
+        self._execute_with_retry(action)
 
     def log_run_started(self, context: RuleContext) -> None:
-        with self._connect() as conn:
+        def action(conn: sqlite3.Connection) -> None:
             conn.execute(
                 """
                 INSERT OR REPLACE INTO runs(run_id, dataset_name, started_at)
@@ -58,10 +68,11 @@ class SQLiteRunLogger(RunLogger):
                 """,
                 (context.run_id, context.dataset_name, context.executed_at.isoformat()),
             )
-            conn.commit()
+
+        self._execute_with_retry(action)
 
     def log_rule_result(self, context: RuleContext, result: RuleResult) -> None:
-        with self._connect() as conn:
+        def action(conn: sqlite3.Connection) -> None:
             conn.execute(
                 """
                 INSERT INTO rule_results(
@@ -85,7 +96,8 @@ class SQLiteRunLogger(RunLogger):
                     datetime.now(tz=UTC).isoformat(),
                 ),
             )
-            conn.commit()
+
+        self._execute_with_retry(action)
 
     def log_run_completed(
         self,
@@ -94,7 +106,8 @@ class SQLiteRunLogger(RunLogger):
     ) -> None:
         results_list = list(results)
         failed = sum(1 for result in results_list if not result.passed)
-        with self._connect() as conn:
+
+        def action(conn: sqlite3.Connection) -> None:
             conn.execute(
                 """
                 UPDATE runs
@@ -110,4 +123,19 @@ class SQLiteRunLogger(RunLogger):
                     context.run_id,
                 ),
             )
-            conn.commit()
+
+        self._execute_with_retry(action)
+
+    def _execute_with_retry(self, action: Callable[[sqlite3.Connection], None]) -> None:
+        attempt = 0
+        while True:
+            try:
+                with self._connect() as conn:
+                    action(conn)
+                    conn.commit()
+                return
+            except sqlite3.OperationalError:
+                attempt += 1
+                if attempt > self._retries:
+                    raise
+                time.sleep(self._retry_delay)

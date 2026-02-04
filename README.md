@@ -65,6 +65,19 @@ rules:
 
 Available built-in types today: `not_null`, `unique`, `accepted_values`, `relationship`, and `expression`. Use `severity: warn|error` per rule and add descriptions for richer logging.
 
+### CLI selectors
+
+The CLI mirrors these selectors:
+
+```bash
+aqualisys validate configs/orders.yml \
+  --include-tag integrity \
+  --exclude-tag experimental \
+  --override-severity NotNullRule::order_id=warn
+```
+
+Selectors stack with what's defined in the YAML, and `--fail-fast/--no-fail-fast` overrides the config flag at runtime.
+
 ## Project Structure
 - `src/aqualisys/`: library source (rules, checker, logging, CLI).
 - `tests/`: pytest suites (unit + integration).

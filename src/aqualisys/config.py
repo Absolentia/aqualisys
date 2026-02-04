@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, ClassVar
 
@@ -13,7 +13,7 @@ except ModuleNotFoundError:  # pragma: no cover - optional dependency
     pl = None  # type: ignore
 
 from .checker import DataQualityChecker
-from .checks.base import BaseRule
+from .checks.base import BaseRule, RuleSeverity
 from .checks.registry import get_rule
 from .logging.sqlite import SQLiteRunLogger
 
@@ -26,12 +26,16 @@ class ValidationSuiteConfig:
     fail_fast: bool = False
     rules: list[Mapping[str, Any]] | None = None
     logger_path: Path = Path("aqualisys_runs.db")
+    include_tags: tuple[str, ...] = ()
+    exclude_tags: tuple[str, ...] = ()
+    severity_overrides: Mapping[str, str] = field(default_factory=dict)
 
     SUPPORTED_FORMATS: ClassVar[set[str]] = {"parquet", "csv"}
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> ValidationSuiteConfig:
         data = yaml.safe_load(Path(path).read_text())
+        selectors = data.get("selectors", {})
         return cls(
             dataset_name=data["dataset"]["name"],
             dataset_path=Path(data["dataset"]["path"]),
@@ -39,6 +43,16 @@ class ValidationSuiteConfig:
             fail_fast=data.get("fail_fast", False),
             rules=data.get("rules", []),
             logger_path=Path(data.get("logger", {}).get("path", "aqualisys_runs.db")),
+            include_tags=tuple(
+                tag.lower() for tag in selectors.get("include_tags", [])
+            ),
+            exclude_tags=tuple(
+                tag.lower() for tag in selectors.get("exclude_tags", [])
+            ),
+            severity_overrides={
+                key: value
+                for key, value in (data.get("severity_overrides") or {}).items()
+            },
         )
 
     def load_dataframe(self) -> pl.DataFrame:
@@ -60,8 +74,56 @@ class ValidationSuiteConfig:
                 definition = get_rule(rule_type)
             except KeyError as exc:
                 raise ValueError(f"unknown rule type: {rule_type}") from exc
-            all_rules.append(definition.builder(config))
+            if not self._matches_selectors(definition.tags):
+                continue
+            rule = definition.builder(config)
+            all_rules.append(rule)
+
+        for name, level in self.severity_overrides.items():
+            self._apply_severity_override(all_rules, name, level)
         return all_rules
+
+    def with_overrides(
+        self,
+        *,
+        include_tags: tuple[str, ...] = (),
+        exclude_tags: tuple[str, ...] = (),
+        severity_overrides: Mapping[str, str] | None = None,
+        fail_fast: bool | None = None,
+    ) -> ValidationSuiteConfig:
+        merged = dict(self.severity_overrides)
+        if severity_overrides:
+            merged.update(severity_overrides)
+        return replace(
+            self,
+            include_tags=self.include_tags + tuple(tag.lower() for tag in include_tags),
+            exclude_tags=self.exclude_tags + tuple(tag.lower() for tag in exclude_tags),
+            severity_overrides=merged,
+            fail_fast=self.fail_fast if fail_fast is None else fail_fast,
+        )
+
+    def _matches_selectors(self, tags: frozenset[str]) -> bool:
+        lowered = {tag.lower() for tag in tags}
+        if self.include_tags and not lowered.intersection(self.include_tags):
+            return False
+        if self.exclude_tags and lowered.intersection(self.exclude_tags):
+            return False
+        return True
+
+    def _apply_severity_override(
+        self,
+        rules: list[BaseRule],
+        rule_name: str,
+        level: str,
+    ) -> None:
+        try:
+            severity = RuleSeverity(level.lower())
+        except ValueError as exc:
+            raise ValueError(f"unknown severity override level: {level}") from exc
+        for rule in rules:
+            if rule.name == rule_name:
+                rule.severity = severity  # type: ignore[assignment]
+                break
 
     def build_checker(self) -> DataQualityChecker:
         logger = SQLiteRunLogger(self.logger_path)

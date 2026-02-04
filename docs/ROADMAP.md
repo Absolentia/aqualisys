@@ -22,8 +22,8 @@
    - ✅ Emit structured results (JSON + SQLite) to support downstream observability.
 3. **Configuration & CLI (Week 3)**  
    - YAML config parser, CLI wrappers for running suites locally or in CI.  
-   - Support `--fail-fast`, severity overrides, include/exclude selectors.  
-   - Harden logging with retries + summary tables.
+   - ✅ Support `--fail-fast`, severity overrides, include/exclude selectors (config + CLI).  
+   - ✅ Harden logging with retries + summary tables (SQLite logger retries).
 4. **DX & Publishing (Week 4)**  
    - Add docs site snippets, end-to-end demo notebook, telemetry opt-in.  
    - ✅ Set up `uv build`, publish to TestPyPI, smoke-test install, then promote to PyPI.  
