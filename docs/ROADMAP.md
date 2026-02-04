@@ -13,21 +13,21 @@
 
 ## Milestones
 1. **Foundation (Week 1)**  
-   - Scaffold repo: `pyproject.toml`, `src/aqualisys`, `tests`.  
-   - Implement minimal Polars rule set (unique, not_null) and SQLite logger.  
-   - Provide quick-start documentation + architecture diagrams in README.
+   - ✅ Scaffold repo: `pyproject.toml`, `src/aqualisys`, `tests`.  
+   - ✅ Implement minimal Polars rule set (unique, not_null) and SQLite logger.  
+   - ✅ Provide quick-start documentation + architecture diagrams in README.
 2. **Rule Expansion (Week 2)**  
-   - Add accepted-values, referential-integrity, expression-based checks.  
-   - Introduce rule registry + tagging for bundles.  
-   - Emit structured results (JSON + SQLite) to support downstream observability.
+   - ✅ Add accepted-values, referential-integrity, expression-based checks (new `ExpressionRule`).  
+   - ✅ Introduce rule registry + tagging for bundles (config now resolves via metadata, severity overrides supported).  
+   - ✅ Emit structured results (JSON + SQLite) to support downstream observability.
 3. **Configuration & CLI (Week 3)**  
    - YAML config parser, CLI wrappers for running suites locally or in CI.  
    - Support `--fail-fast`, severity overrides, include/exclude selectors.  
    - Harden logging with retries + summary tables.
 4. **DX & Publishing (Week 4)**  
    - Add docs site snippets, end-to-end demo notebook, telemetry opt-in.  
-   - Set up `uv build`, publish to TestPyPI, smoke-test install, then promote to PyPI.  
-   - Configure CI (lint, type-check, pytest with coverage) and badges.
+   - ✅ Set up `uv build`, publish to TestPyPI, smoke-test install, then promote to PyPI.  
+   - ✅ Configure CI (lint, type-check, pytest with coverage) and badges.
 
 ## Success Metrics
 - Unit + integration coverage ≥90% on validators/loggers.  

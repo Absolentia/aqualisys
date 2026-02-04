@@ -2,6 +2,7 @@ import pytest
 
 from aqualisys.checks.rules import (
     AcceptedValuesRule,
+    ExpressionRule,
     NotNullRule,
     RelationshipRule,
     UniqueRule,
@@ -47,3 +48,24 @@ def test_relationship_rule_respects_reference():
     ).evaluate(orders)
     assert not result.passed
     assert result.metrics["violation_count"] == 1
+
+
+def test_expression_rule_passes_when_expression_holds():
+    df = pl.DataFrame({"a": [1, 2], "b": [2, 4]})
+    rule = ExpressionRule("pl.col('b') >= pl.col('a')")
+    assert rule.evaluate(df).passed
+
+
+def test_expression_rule_reports_violations():
+    df = pl.DataFrame({"a": [1, -2], "b": [0, 0]})
+    rule = ExpressionRule("pl.col('a') >= 0")
+    result = rule.evaluate(df)
+    assert not result.passed
+    assert result.metrics["violation_count"] == 1
+
+
+def test_expression_rule_requires_polars_expression():
+    df = pl.DataFrame({"a": [1]})
+    rule = ExpressionRule("42")
+    with pytest.raises(ValueError):
+        rule.evaluate(df)

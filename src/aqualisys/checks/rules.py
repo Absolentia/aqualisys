@@ -128,3 +128,55 @@ class RelationshipRule(ColumnRule):
                 "reference_size": len(reference_set),
             },
         )
+
+
+class ExpressionRule(BaseRule):
+    """Evaluates a boolean Polars expression string for every row."""
+
+    def __init__(
+        self,
+        expression: str,
+        *,
+        severity: RuleSeverity = RuleSeverity.ERROR,
+        description: str | None = None,
+    ) -> None:
+        self.expression = expression
+        self.severity = severity
+        self.description = description or f"ExpressionRule on {expression}"
+
+    @property
+    def name(self) -> str:
+        return f"ExpressionRule::{self.expression}"
+
+    def _compile(self) -> pl.Expr:
+        try:
+            compiled = eval(self.expression, {"pl": pl}, {})
+        except Exception as exc:  # pragma: no cover - exercised via tests
+            raise ValueError(f"invalid expression: {self.expression}") from exc
+        if not isinstance(compiled, pl.Expr):
+            raise ValueError(
+                "expression must evaluate to a Polars expression, got "
+                f"{type(compiled)!r}"
+            )
+        return compiled
+
+    def evaluate(self, df: pl.DataFrame) -> RuleResult:
+        expr = self._compile()
+        result_series = df.select(expr.alias("result")).to_series()
+        violations = int((~result_series).sum())
+        status = RuleStatus.PASSED if violations == 0 else RuleStatus.FAILED
+        message = (
+            "expression satisfied for all rows"
+            if status is RuleStatus.PASSED
+            else f"{violations} expression violations detected"
+        )
+        return RuleResult(
+            rule_name=self.name,
+            status=status,
+            message=message,
+            severity=self.severity,
+            metrics={
+                "expression": self.expression,
+                "violation_count": violations,
+            },
+        )

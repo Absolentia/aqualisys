@@ -13,3 +13,7 @@ rules:
   - type: accepted_values
     column: order_status
     allowed_values: ["pending", "shipped", "delivered", "cancelled"]
+  - type: expression
+    expression: "pl.col('total') >= 0"
+    severity: warn
+    description: "Order totals must be non-negative"
